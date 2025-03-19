@@ -1,0 +1,209 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+:root {
+  --primary-color: #f59023;
+  --primary-color-hover: #e07c1e;
+  --background-color: #ffffff;
+  --text-color: #333;
+  --transition-speed: 0.3s;
+}
+
+.couriers-table {
+  padding: 0 1.5rem;
+  font-family: "Montserrat", sans-serif;
+
+  h2 {
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--text-color);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-color);
+
+    thead {
+      background-color: #f9f9f9;
+      th {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: var(--text-color);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        text-align: left;
+      }
+    }
+
+    tbody {
+      tr {
+        transition: background-color var(--transition-speed);
+        &:hover {
+          background-color: rgba(245, 144, 35, 0.1);
+        }
+        td {
+          padding: 0.75rem;
+          font-size: 0.9rem;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+          color: var(--text-color);
+        }
+      }
+    }
+  }
+
+  .dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .dialog {
+    background: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+
+    h3 {
+      margin-bottom: 1rem;
+    }
+
+    .multi-select {
+      width: 100%;
+      height: 150px;
+      margin-bottom: 1rem;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: space-around;
+
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        background-color: var(--primary-color);
+        color: #fff;
+        cursor: pointer;
+        transition: background-color var(--transition-speed);
+        font-size: 1rem;
+        &:hover {
+          background-color: var(--primary-color-hover);
+        }
+      }
+    }
+  }
+}
+
+/* Pagination styles */
+.pagination {
+  display: flex;
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+  li {
+    margin: 0 0.3rem;
+    a {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      color: #333;
+      font-size: 0.9rem;
+    }
+  }
+  .active a {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .couriers-table {
+    padding: 1rem;
+    table {
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+      thead {
+        th {
+          padding: 0.5rem;
+          font-size: 0.85rem;
+        }
+      }
+      tbody {
+        tr {
+          td {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Minimalistic style for filter section */
+.couriers-table .filter-bar {
+  background-color: #f8f8f8; // very light gray background
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.couriers-table .filter-bar form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+.couriers-table .filter-bar label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  flex: 1;
+  min-width: 150px;
+}
+
+.couriers-table .filter-bar select,
+.couriers-table .filter-bar input {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 0.3rem;
+  background-color: #fff;
+}
+
+.couriers-table .filter-bar button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: #fff;
+  transition: background-color var(--transition-speed);
+}
+
+.couriers-table .filter-bar button:hover {
+  background-color: var(--primary-color-hover);
+}
