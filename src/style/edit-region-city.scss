@@ -26,6 +26,11 @@
     }
   }
 
+  .city-checkboxes {
+    max-height: 20vh;
+    overflow-y: auto;
+  }
+
   .multi-select {
     height: 150px;
     margin-top: 0.5rem;
