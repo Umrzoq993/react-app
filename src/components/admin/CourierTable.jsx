@@ -107,7 +107,7 @@ export default function CourierTable() {
 
   const fetchCities = async () => {
     try {
-      const response = await axios({ url: "/accounts/cities/" });
+      const response = await axios({ url: "/accounts/cities/?page_size=1000" });
       setAllCities(response.data.results);
     } catch (err) {
       console.error("Error fetching cities:", err);
