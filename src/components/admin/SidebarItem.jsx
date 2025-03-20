@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Link } from "react-router-dom";
 import "../../style/sidebar.scss";
@@ -11,15 +11,19 @@ import {
 } from "lucide-react";
 
 export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
       className={`sidebar ${toggled ? "mobile-open" : ""} ${
-        collapsed ? "collapsed" : ""
+        collapsed && !isHovered ? "collapsed" : ""
       }`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Sidebar
         style={{ height: "100%", position: "fixed" }}
-        collapsed={collapsed}
+        collapsed={collapsed && !isHovered}
         toggled={toggled}
       >
         <Menu>
@@ -29,15 +33,14 @@ export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
               style={{
                 padding: "9px",
                 fontWeight: "bold",
-                fontSize: collapsed ? 0 : 14,
+                fontSize: collapsed && !isHovered ? 0 : 14,
                 letterSpacing: "1px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              {collapsed ? (
-                // Display logo image when collapsed
+              {collapsed && !isHovered ? (
                 <img
                   src="/tujjor_logo.png"
                   alt="Logo"
