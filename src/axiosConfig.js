@@ -3,7 +3,7 @@ import axios from "axios";
 import { navigate } from "./NavigationService"; // adjust the path as needed
 
 const axiosInstance = axios.create({
-  baseURL: "https://100.42.177.217:8443/api",
+  baseURL: "https://173.249.1.220:8443/api",
 });
 
 axiosInstance.interceptors.request.use((config) => {
