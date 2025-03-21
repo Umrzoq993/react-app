@@ -308,7 +308,7 @@ export default function ProductTable() {
       <table className="minimal-table">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>T/R</th>
             <th>Vaqt</th>
             <th>Manzil</th>
             <th>Viloyat</th>
