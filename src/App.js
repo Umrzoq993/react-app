@@ -11,6 +11,7 @@ import CitiesTable from "./components/admin/CitiesTable";
 import RegionsTable from "./components/admin/RegionsTable";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import UserList from "./components/admin/UserList";
 
 // Create a wrapper component to use useNavigate
 function AppWithNavigation() {
@@ -31,6 +32,7 @@ function AppWithNavigation() {
           <Route path="couriers" element={<CourierTable />} />
           <Route path="cities" element={<CitiesTable />} />
           <Route path="regions" element={<RegionsTable />} />
+          <Route path="users" element={<UserList />} />
         </Route>
       </Routes>
     </>

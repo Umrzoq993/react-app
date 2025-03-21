@@ -8,6 +8,8 @@ import {
   ShoppingCart,
   Landmark,
   Building2Icon,
+  User2Icon,
+  Users,
 } from "lucide-react";
 
 export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
@@ -74,6 +76,9 @@ export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
             icon={<Building2Icon />}
           >
             Viloyatlar
+          </MenuItem>
+          <MenuItem component={<Link to="/main/users" />} icon={<Users />}>
+            Foydalanuvchilar
           </MenuItem>
         </Menu>
       </Sidebar>
