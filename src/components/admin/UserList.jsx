@@ -100,7 +100,7 @@ function UserList() {
     // If password field is not empty, validate it.
     if (formData.password || formData.confirmPassword) {
       if (formData.password !== formData.confirmPassword) {
-        setPasswordError("Passwords do not match.");
+        setPasswordError("Parollar mos kelmadi.");
         return;
       }
       if (!validatePassword(formData.password)) {
