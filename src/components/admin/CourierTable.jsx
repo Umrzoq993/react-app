@@ -352,9 +352,9 @@ export default function CourierTable() {
           <label>
             <span>Qidirish:</span>
             <input
-              type="text"
+              type="search"
               name="search"
-              placeholder="Search by username, full name, or city"
+              placeholder="F.I.Sh. yoki username"
               value={filterInput.search}
               onChange={handleFilterChange}
             />

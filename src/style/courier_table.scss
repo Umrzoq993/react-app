@@ -57,6 +57,7 @@
     form {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 1rem;
     }
     label {
@@ -67,6 +68,19 @@
         margin-bottom: 0.25rem;
       }
       select {
+        padding: 0.5rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 0.25rem;
+        font-family: "Montserrat", sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-color);
+        transition: border-color var(--transition-speed);
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+      }
+      input {
         padding: 0.5rem;
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: 0.25rem;

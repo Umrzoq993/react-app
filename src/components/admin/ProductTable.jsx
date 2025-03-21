@@ -283,11 +283,11 @@ export default function ProductTable() {
 
           {/* Universal search field */}
           <label>
-            Universal qidirish:
+            Qidirish:
             <input
-              type="text"
+              type="search"
               name="search"
-              placeholder="Qidirish..."
+              placeholder="Qidirish"
               value={filterInput.search}
               onChange={handleFilterChange}
             />
