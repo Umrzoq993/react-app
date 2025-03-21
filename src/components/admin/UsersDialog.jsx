@@ -1,4 +1,3 @@
-// src/components/admin/UsersDialog.jsx
 import React from "react";
 import { ReactDialogBox } from "react-js-dialog-box";
 import "react-js-dialog-box/dist/index.css";

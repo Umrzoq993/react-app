@@ -8,7 +8,7 @@ export default function LineAreaChart() {
     series: [],
     options: {
       chart: { type: "area", toolbar: { show: false } },
-      title: { text: "Oyma-oy Pending vs Delivered", align: "left" },
+      title: { text: "Oyma-oy Kutilayotgan va Yetkazilganlar", align: "left" },
       dataLabels: { enabled: false },
       stroke: { curve: "smooth" },
       xaxis: { categories: [] },
@@ -40,7 +40,7 @@ export default function LineAreaChart() {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Error fetching area chart data");
+      setError("Chart ma'lumotlari yuklanmadi");
       setLoading(false);
     }
   };
@@ -49,7 +49,7 @@ export default function LineAreaChart() {
     fetchAreaChartData();
   }, []);
 
-  if (loading) return <div>Loading area chart...</div>;
+  if (loading) return <div>Yuklanmoqda...</div>;
   if (error) return <div>{error}</div>;
 
   return (

@@ -41,12 +41,12 @@ const RegionsTable = () => {
         setRegions(response.data);
         setTotalCount(response.data.length);
       } else {
-        console.warn("Unexpected region data format:", response.data);
+        console.warn("Noto'g'ri ma'lumot formati:", response.data);
         setRegions([]);
       }
       setLoading(false);
     } catch (err) {
-      setError("Error fetching regions");
+      setError("Viloyatlar yuklanmadi");
       setLoading(false);
     }
   };
@@ -64,11 +64,11 @@ const RegionsTable = () => {
   };
 
   if (loading) {
-    return <div className="regions-table">Loading regions...</div>;
+    return <div className="regions-table">Viloyatlar yuklanmoqda...</div>;
   }
 
   if (error) {
-    return <div className="regions-table">Error: {error}</div>;
+    return <div className="regions-table">Xatolik: {error}</div>;
   }
 
   // Compute total pages
@@ -79,8 +79,8 @@ const RegionsTable = () => {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Region Name</th>
+            <th>T/R</th>
+            <th>Viloyat nomi</th>
           </tr>
         </thead>
         <tbody>
@@ -95,8 +95,8 @@ const RegionsTable = () => {
 
       {pageCount > 1 && (
         <ReactPaginate
-          previousLabel={"← Previous"}
-          nextLabel={"Next →"}
+          previousLabel={"← Oldingisi"}
+          nextLabel={"Keyingisi →"}
           breakLabel={"..."}
           pageCount={pageCount}
           onPageChange={handlePageClick}

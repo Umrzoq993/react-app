@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
 import "../../style/courier_table.scss";
-import { LandPlot } from "lucide-react";
+import { LandPlot, Pencil, Plus, Filter, FilterX } from "lucide-react";
 import { ReactDialogBox } from "react-js-dialog-box";
 import "react-js-dialog-box/dist/index.css";
 import axios from "../../axiosConfig";
@@ -9,7 +9,7 @@ import { toast } from "react-toastify";
 import EditRegionCityContent from "./EditRegionCityContent";
 import ReactPaginate from "react-paginate";
 import { AdminContext } from "../commonContext";
-import { Plus, Filter, FilterX } from "lucide-react";
+import NewCourierDialog from "./NewCourierDialog"; // your create courier dialog
 
 const token = localStorage.getItem("access");
 
@@ -18,6 +18,7 @@ const defaultFilters = {
   region: "",
   city: "",
   assigned: "",
+  search: "",
 };
 
 export default function CourierTable() {
@@ -36,6 +37,13 @@ export default function CourierTable() {
   const [openCity, setOpenCity] = useState(false);
   const [selectedCourier, setSelectedCourier] = useState(null);
 
+  // NEW: State for editing courier details (username, full name)
+  const [isEditCourierDialogOpen, setIsEditCourierDialogOpen] = useState(false);
+  const [editingCourierData, setEditingCourierData] = useState(null);
+
+  // NEW: State for creating a Courier
+  const [openCreate, setOpenCreate] = useState(false);
+
   // Filters
   const [filterInput, setFilterInput] = useState({ ...defaultFilters });
   const [filters, setFilters] = useState({ ...defaultFilters });
@@ -44,9 +52,6 @@ export default function CourierTable() {
   const [regions, setRegions] = useState([]);
   const [allCities, setAllCities] = useState([]);
   const [filteredCities, setFilteredCities] = useState([]);
-
-  // NEW: State for creating a Courier
-  const [openCreate, setOpenCreate] = useState(false);
 
   // Functions to open/close creation dialog
   const handleOpenCreateDialog = () => setOpenCreate(true);
@@ -84,12 +89,13 @@ export default function CourierTable() {
           region: filters.region,
           city: filters.city,
           assigned: filters.assigned,
+          search: filters.search, // added search param
         },
       });
       setCouriers(response.data.results);
       setTotalCount(response.data.count || 0);
     } catch (err) {
-      toast.error(err.message || "Error fetching data");
+      toast.error(err.message || "Ma'lumotlar yuklanmadi");
       setError(err.message);
     } finally {
       setLoading(false);
@@ -154,7 +160,7 @@ export default function CourierTable() {
     setCurrentPage(data.selected + 1);
   };
 
-  // ------------------ EDIT CITIES DIALOG ------------------
+  // ------------------ EDIT COVERED CITIES DIALOG ------------------
   const handleCloseCourierDialog = () => {
     setOpenCity(false);
     setSelectedCourier(null);
@@ -182,6 +188,94 @@ export default function CourierTable() {
     }
   };
 
+  // ------------------ EDIT COURIER DETAILS ------------------
+  const openEditCourierDialog = (courier) => {
+    setEditingCourierData({
+      id: courier.user.id, // User id for /accounts/users/
+      courier_id: courier.id, // Courier id for /accounts/couriers/
+      username: courier.user.username,
+      full_name: courier.user.full_name,
+      // Initialize password fields as empty
+      password: "",
+      confirmPassword: "",
+    });
+    setIsEditCourierDialogOpen(true);
+  };
+
+  const closeEditCourierDialog = () => {
+    setIsEditCourierDialogOpen(false);
+    setEditingCourierData(null);
+  };
+
+  const handleEditCourierChange = (e) => {
+    const { name, value } = e.target;
+    setEditingCourierData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    return password.length >= minLength && hasLetter && hasDigit;
+  };
+
+  const handleEditCourierConfirm = async () => {
+    // If either password field is non-empty, ensure they match.
+    if (editingCourierData.password || editingCourierData.confirmPassword) {
+      if (editingCourierData.password !== editingCourierData.confirmPassword) {
+        toast.error(
+          "Parollar mos kelmadi. Iltimos tekshirib qaytadan kiriting."
+        );
+        return;
+      }
+      if (!validatePassword(editingCourierData.password)) {
+        toast.error(
+          "Parol kamida 8 ta belgidan iborat bo'lishi kerak va unda kamida bir harf ham, bir raqam ham bo'lishi shart."
+        );
+        return;
+      }
+    }
+
+    try {
+      // Prepare the payload for updating the user.
+      const userPayload = {
+        username: editingCourierData.username,
+        full_name: editingCourierData.full_name,
+        // Optionally, include role if needed:
+        // role: editingCourierData.role,
+        ...(editingCourierData.password
+          ? { password: editingCourierData.password }
+          : {}),
+      };
+
+      // Update the User model.
+      await axios.patch(
+        `/accounts/users/${editingCourierData.id}/`,
+        userPayload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // If a new password was provided, update the Courier's plain_password field.
+      if (editingCourierData.password) {
+        await axios.patch(
+          `/accounts/couriers/${editingCourierData.courier_id}/`,
+          { plain_password: editingCourierData.password },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+
+      closeEditCourierDialog();
+      fetchCouriers(currentPage);
+      toast.success("Kuryer ma'lumotlari muvaffaqiyatli o'zgartirildi.");
+    } catch (err) {
+      console.error("Kuryer ma'lumotlarini tahrirlashda xatolik: ", err);
+      toast.error(
+        "Kuryer ma'lumotlarini tahrirlashda xatolik: " +
+          (err.response?.data || err.message)
+      );
+    }
+  };
+
   // Helper for displaying covered cities
   const getCitiesDisplay = (courier) => {
     if (courier.covered_cities_names) return courier.covered_cities_names;
@@ -193,9 +287,16 @@ export default function CourierTable() {
     return "(none)";
   };
 
-  if (loading) return <div className="couriers-table">Loading couriers...</div>;
+  if (loading)
+    return (
+      <div className="couriers-table">
+        Kuryer haqidagi ma'lumotlar yuklanmoqda...
+      </div>
+    );
   if (error)
-    return <div className="couriers-table">Error: {String(error)}</div>;
+    return (
+      <div className="couriers-table">Xatolik yuz berdi: {String(error)}</div>
+    );
 
   const pageCount = Math.ceil(totalCount / pageSize);
 
@@ -248,8 +349,18 @@ export default function CourierTable() {
               <option value="unassigned">✖️ Biriktirilmagan</option>
             </select>
           </label>
+          <label>
+            <span>Qidirish:</span>
+            <input
+              type="text"
+              name="search"
+              placeholder="Search by username, full name, or city"
+              value={filterInput.search}
+              onChange={handleFilterChange}
+            />
+          </label>
           <button type="submit">
-            <Filter /> Apply Filters
+            <Filter /> Filtrlash
           </button>
           <button type="button" onClick={handleClearFilters}>
             <FilterX /> Filtrni tozalash
@@ -282,7 +393,13 @@ export default function CourierTable() {
               <td>{item?.user?.username || "No username"}</td>
               <td>{item?.plain_password || ""}</td>
               <td className="actions">
-                <LandPlot onClick={() => handleOpenCourierDialog(item)} />
+                {/* Edit courier details */}
+                <Pencil size={20} onClick={() => openEditCourierDialog(item)} />
+                {/* Edit covered cities */}
+                <LandPlot
+                  size={20}
+                  onClick={() => handleOpenCourierDialog(item)}
+                />
               </td>
             </tr>
           ))}
@@ -317,9 +434,9 @@ export default function CourierTable() {
           bodyBackgroundColor="white"
           bodyTextColor="black"
           zIndex="10"
-          headerText={`Edit Covered Cities for ${
-            selectedCourier.user?.full_name || "Courier"
-          }`}
+          headerText={`${
+            selectedCourier.user?.full_name || "Kuryer"
+          } ning javobgar tumanlari`}
         >
           <EditRegionCityContent
             courier={selectedCourier}
@@ -333,149 +450,95 @@ export default function CourierTable() {
 
       {/* CREATE NEW COURIER DIALOG */}
       {openCreate && (
-        <CreateCourierDialog
+        <NewCourierDialog
           onClose={handleCloseCreateDialog}
           onCreated={handleNewCourierCreated}
           regions={regions}
-          allCities={allCities}
+          cities={allCities}
+        />
+      )}
+
+      {/* EDIT COURIER DIALOG */}
+      {isEditCourierDialogOpen && editingCourierData && (
+        <EditCourierDialog
+          courier={editingCourierData}
+          onClose={closeEditCourierDialog}
+          onConfirm={handleEditCourierConfirm}
+          onChange={handleEditCourierChange}
         />
       )}
     </div>
   );
 }
 
-/* 
-  Inline 'CreateCourierDialog' component with enhanced design.
-  It uses ReactDialogBox with styled-components for a modern look.
-*/
-function CreateCourierDialog({ onClose, onCreated, regions, allCities }) {
-  const [username, setUsername] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [region, setRegion] = useState("");
-  const [coveredCities, setCoveredCities] = useState([]);
-
-  // Filter the allCities list based on chosen region
-  const filteredCities = React.useMemo(() => {
-    if (!region) return [];
-    return allCities.filter((c) => {
-      if (typeof c.region === "number") {
-        return c.region === parseInt(region, 10);
-      } else if (c.region && typeof c.region.id === "number") {
-        return c.region.id === parseInt(region, 10);
-      }
-      return false;
-    });
-  }, [region, allCities]);
-
-  const handleCityToggle = (cityId) => {
-    setCoveredCities((prev) =>
-      prev.includes(cityId)
-        ? prev.filter((id) => id !== cityId)
-        : [...prev, cityId]
-    );
-  };
-
-  const handleSubmit = async () => {
-    if (!username || !fullName || !region || coveredCities.length === 0) {
-      toast.error("Please fill in all fields, including at least one city.");
-      return;
-    }
-
-    try {
-      await axios.post("/accounts/couriers/create/", {
-        username,
-        full_name: fullName,
-        region: parseInt(region, 10),
-        covered_cities: coveredCities.map((id) => parseInt(id, 10)),
-      });
-      toast.success("Courier created successfully!");
-      onCreated(); // Refresh list in parent
-    } catch (err) {
-      console.error(err);
-      toast.error(
-        "Error creating courier: " + (err.response?.data || err.message)
-      );
-    }
-  };
-
+/* ------------------ EDIT COURIER DIALOG COMPONENT ------------------ */
+function EditCourierDialog({ courier, onClose, onConfirm, onChange }) {
   return (
     <ReactDialogBox
-      closeBox={onClose}
-      modalWidth="40%"
-      headerText="Create New Courier"
+      headerText="Kuryer ma'lumotlarini tahrirlash"
       headerBackgroundColor="#f59023"
       headerTextColor="white"
-      headerHeight="65"
       closeButtonColor="white"
       bodyBackgroundColor="white"
-      bodyTextColor="black"
-      zIndex="999"
+      bodyTextColor="#333"
+      headerHeight="70"
+      closeBox={onClose}
+      modalWidth="40%"
     >
-      <DialogContent>
+      <DialogContainer>
         <FormField>
-          <Label>Username:</Label>
+          <Label>Foydalanuvchi nomi:</Label>
           <Input
             type="text"
-            placeholder="Enter courier's username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            name="username"
+            value={courier.username}
+            onChange={onChange}
           />
         </FormField>
         <FormField>
-          <Label>Full Name:</Label>
+          <Label>Familiya, ismi, sharifi:</Label>
           <Input
             type="text"
-            placeholder="Enter courier's full name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            name="full_name"
+            value={courier.full_name}
+            onChange={onChange}
           />
         </FormField>
         <FormField>
-          <Label>Region:</Label>
-          <Select value={region} onChange={(e) => setRegion(e.target.value)}>
-            <option value="">-- Select Region --</option>
-            {regions.map((reg) => (
-              <option key={reg.id} value={reg.id}>
-                {reg.name}
-              </option>
-            ))}
-          </Select>
+          <Label>Yangi parol:</Label>
+          <Input
+            type="password"
+            name="password"
+            value={courier.password}
+            onChange={onChange}
+            placeholder="Parol o'zgarmasa bo'sh qoldiring"
+          />
         </FormField>
         <FormField>
-          <Label style={{ marginBottom: "0.5rem" }}>
-            Covered Cities: (Check all that apply)
-          </Label>
-          <CheckboxList>
-            {filteredCities.map((city) => (
-              <CheckboxItem key={city.id}>
-                <input
-                  type="checkbox"
-                  checked={coveredCities.includes(city.id)}
-                  onChange={() => handleCityToggle(city.id)}
-                />
-                {city.name}
-              </CheckboxItem>
-            ))}
-          </CheckboxList>
+          <Label>Parolni takrorlang:</Label>
+          <Input
+            type="password"
+            name="confirmPassword"
+            value={courier.confirmPassword}
+            onChange={onChange}
+            placeholder="Parol o'zgarmasa bo'sh qoldiring"
+          />
         </FormField>
         <ActionsRow>
-          <ButtonPrimary onClick={handleSubmit}>Create</ButtonPrimary>
-          <ButtonSecondary onClick={onClose}>Cancel</ButtonSecondary>
+          <ButtonPrimary onClick={onConfirm}>Saqlash</ButtonPrimary>
+          <ButtonSecondary onClick={onClose}>Bekor qilish</ButtonSecondary>
         </ActionsRow>
-      </DialogContent>
+      </DialogContainer>
     </ReactDialogBox>
   );
 }
 
-/* ------------------ STYLED COMPONENTS ------------------ */
-
-const DialogContent = styled.div`
+/* Styled components for dialog */
+const DialogContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 0.5rem;
-  max-height: 70vh;
-  overflow-y: auto;
+  padding: 1rem;
 `;
 
 const FormField = styled.div`
@@ -485,50 +548,23 @@ const FormField = styled.div`
 
 const Label = styled.span`
   font-weight: 600;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
 `;
 
 const Input = styled.input`
   padding: 0.5rem;
-  border-radius: 6px;
   border: 1px solid #ccc;
+  border-radius: 6px;
   &:focus {
     outline: none;
     border-color: #f59023;
-  }
-`;
-
-const Select = styled.select`
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  &:focus {
-    outline: none;
-    border-color: #f59023;
-  }
-`;
-
-const CheckboxList = styled.div`
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  max-height: 120px;
-  overflow-y: auto;
-  padding: 0.5rem;
-`;
-
-const CheckboxItem = styled.label`
-  display: block;
-  margin-bottom: 0.25rem;
-  cursor: pointer;
-  input {
-    margin-right: 0.5rem;
   }
 `;
 
 const ActionsRow = styled.div`
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: 1rem;
 `;
 
 const ButtonPrimary = styled.button`
@@ -546,8 +582,8 @@ const ButtonPrimary = styled.button`
 `;
 
 const ButtonSecondary = styled.button`
-  background-color: #f59023;
-  color: white;
+  background-color: #ccc;
+  color: #333;
   border: none;
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -555,6 +591,6 @@ const ButtonSecondary = styled.button`
   font-weight: 600;
   transition: background-color 0.2s;
   &:hover {
-    background-color: #888;
+    background-color: #bbb;
   }
 `;

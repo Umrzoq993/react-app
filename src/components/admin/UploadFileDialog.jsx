@@ -18,7 +18,7 @@ export default function UploadFileDialog({ onClose }) {
 
   const handleUpload = async () => {
     if (!file) {
-      toast.error("Please select a file first.");
+      toast.error("Iltimos avval fayli tanlang.");
       return;
     }
     const formData = new FormData();
@@ -29,12 +29,12 @@ export default function UploadFileDialog({ onClose }) {
 
     try {
       const response = await axios.post("/accounts/upload/", formData);
-      toast.success("File uploaded successfully.");
+      toast.success("Fayl muvaffaqqiyatli yuklandi.");
       console.log(response.data);
       onClose(); // close dialog on success
     } catch (err) {
       toast.error(
-        "Error uploading file: " + (err.response?.data?.error || err.message)
+        "Faylni yulashda xatolik: " + (err.response?.data?.error || err.message)
       );
     }
   };
@@ -49,10 +49,10 @@ export default function UploadFileDialog({ onClose }) {
             checked={sendSms}
             onChange={() => setSendSms((prev) => !prev)}
           />
-          Send SMS for each product?
+          Har bir pochta uchun sms yuborilsinmi?
         </label>
       </CheckboxRow>
-      <button onClick={handleUpload}>Upload File</button>
+      <button onClick={handleUpload}>Faylni yuklash</button>
     </Wrapper>
   );
 }

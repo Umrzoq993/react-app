@@ -65,11 +65,8 @@ export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
           >
             Pochtalar
           </MenuItem>
-          <MenuItem component={<Link to="/main/couriers" />} icon={<Truck />}>
-            Kuryerlar
-          </MenuItem>
           <MenuItem component={<Link to="/main/cities" />} icon={<Landmark />}>
-            Shaharlar
+            Tumanlar
           </MenuItem>
           <MenuItem
             component={<Link to="/main/regions" />}
@@ -79,6 +76,9 @@ export default function SidebarItem({ collapsed, toggled, onHeaderClick }) {
           </MenuItem>
           <MenuItem component={<Link to="/main/users" />} icon={<Users />}>
             Foydalanuvchilar
+          </MenuItem>
+          <MenuItem component={<Link to="/main/couriers" />} icon={<Truck />}>
+            Kuryerlar
           </MenuItem>
         </Menu>
       </Sidebar>

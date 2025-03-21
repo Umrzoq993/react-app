@@ -7,12 +7,15 @@ import "react-js-dialog-box/dist/index.css";
 import UploadFileDialog from "./UploadFileDialog";
 import { AdminContext } from "../commonContext";
 import { FileUp, Filter, FilterX } from "lucide-react";
+import moment from "moment";
 
+// Updated defaultFilters to include a universal search field
 const defaultFilters = {
   order_status: "",
   region: "",
   city: "",
   assigned: "",
+  search: "", // new search field
 };
 
 export default function ProductTable() {
@@ -23,7 +26,7 @@ export default function ProductTable() {
   const [totalCount, setTotalCount] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10); // Set your desired page size
+  const [pageSize, setPageSize] = useState(10);
 
   // Cascade filter data
   const [regions, setRegions] = useState([]);
@@ -51,7 +54,7 @@ export default function ProductTable() {
     fetchCouriers();
   }, []);
 
-  // Re-fetch products when filters or currentPage changes
+  // Re-fetch products when filters, currentPage or pageSize changes
   useEffect(() => {
     fetchProducts(currentPage);
   }, [filters, currentPage, pageSize]);
@@ -62,13 +65,16 @@ export default function ProductTable() {
     setError(null);
     try {
       const token = localStorage.getItem("access");
-      // Include page_size in your params
-      const params = { ...filters, page: pageNumber, page_size: pageSize };
+      // Include page_size and the search filter in your params
+      const params = {
+        ...filters,
+        page: pageNumber,
+        page_size: pageSize,
+      };
       const response = await axios.get("/accounts/products/", {
         headers: { Authorization: `Bearer ${token}` },
         params,
       });
-      // DRF paginated response: { count, next, previous, results }
       const data = response.data;
       setProducts(data.results || []);
       setTotalCount(data.count || 0);
@@ -97,7 +103,6 @@ export default function ProductTable() {
   const fetchCities = async () => {
     try {
       const token = localStorage.getItem("access");
-      // Request all cities by increasing the page_size parameter
       const res = await axios.get("/accounts/cities/?page_size=1000", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -130,17 +135,14 @@ export default function ProductTable() {
     const { name, value } = e.target;
     setFilterInput((prev) => ({ ...prev, [name]: value }));
 
-    // Cascade: when region changes, reset city and update filteredCities
     if (name === "region") {
       setFilterInput((prev) => ({ ...prev, city: "" }));
       if (value) {
         const regionId = parseInt(value, 10);
         const filtered = allCities.filter((c) => {
-          if (typeof c.region === "number") {
-            return c.region === regionId;
-          } else if (c.region && typeof c.region.id === "number") {
+          if (typeof c.region === "number") return c.region === regionId;
+          if (c.region && typeof c.region.id === "number")
             return c.region.id === regionId;
-          }
           return false;
         });
         setFilteredCities(filtered);
@@ -178,7 +180,6 @@ export default function ProductTable() {
         { assigned_to: courierId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // Refresh product list after assignment
       fetchProducts(currentPage);
     } catch (err) {
       alert(
@@ -188,15 +189,13 @@ export default function ProductTable() {
     }
   };
 
-  // -------------- Helper for Eligible Couriers --------------
-  // Returns couriers whose covered_cities includes the product's city.
+  // Helper for filtering eligible couriers
   const getEligibleCouriers = (product) => {
     if (!product.city) return [];
     const cityId =
       typeof product.city === "number" ? product.city : product.city.id;
     return couriers.filter((courier) => {
       if (!courier.covered_cities) return false;
-      // Expecting covered_cities as an array of objects with an id field
       return courier.covered_cities.some((c) => {
         if (c && typeof c === "object" && c.id) {
           return c.id === cityId;
@@ -206,7 +205,7 @@ export default function ProductTable() {
     });
   };
 
-  // Helper: Get current assigned courier's ID (handles both numeric and object formats)
+  // Helper: Get assigned courier's id
   const getAssignedCourierId = (product) => {
     if (!product.assigned_to) return "";
     return typeof product.assigned_to === "number"
@@ -230,9 +229,9 @@ export default function ProductTable() {
               onChange={handleFilterChange}
             >
               <option value="">Barchasi</option>
-              <option value="Pending">Kutilmoqda</option>
-              <option value="Delivered">Yetkazilgan</option>
-              <option value="Cancelled">Bekor qilingan</option>
+              <option value="Pending">⏳ Kutilmoqda</option>
+              <option value="Cancelled">✅ Bekor qilingan</option>
+              <option value="Delivered">❌ Yetkazilgan</option>
             </select>
           </label>
 
@@ -282,14 +281,23 @@ export default function ProductTable() {
             </select>
           </label>
 
+          {/* Universal search field */}
+          <label>
+            Universal qidirish:
+            <input
+              type="text"
+              name="search"
+              placeholder="Qidirish..."
+              value={filterInput.search}
+              onChange={handleFilterChange}
+            />
+          </label>
+
           <button type="submit">
-            {" "}
-            <Filter />
-            Filtrlash
+            <Filter /> Filtrlash
           </button>
           <button type="button" onClick={handleClearFilters}>
-            <FilterX />
-            Filtrni tozalash
+            <FilterX /> Filtrni tozalash
           </button>
           <button type="button" onClick={() => setIsDialogOpen(true)}>
             <FileUp /> Fayldan yuklash
@@ -315,7 +323,6 @@ export default function ProductTable() {
             const assignedCourierId = getAssignedCourierId(p);
             const eligibleCouriers = getEligibleCouriers(p);
 
-            // If a courier is already assigned but not in the eligible list, add it.
             if (
               assignedCourierId &&
               !eligibleCouriers.some((c) => c.id === assignedCourierId)
@@ -331,7 +338,7 @@ export default function ProductTable() {
             return (
               <tr key={p.id}>
                 <td>{p.order_number}</td>
-                <td>{new Date(p.date).toLocaleDateString()}</td>
+                <td>{moment(p.date).format("DD.MM.YYYY")}</td>
                 <td>{p.address}</td>
                 <td>{p.region_name}</td>
                 <td>{p.city_name}</td>
@@ -363,8 +370,8 @@ export default function ProductTable() {
       </table>
 
       <ReactPaginate
-        previousLabel={"← Previous"}
-        nextLabel={"Next →"}
+        previousLabel={"← Oldingisi"}
+        nextLabel={"Keyingisi →"}
         breakLabel={"..."}
         pageCount={pageCount}
         marginPagesDisplayed={1}
@@ -372,7 +379,7 @@ export default function ProductTable() {
         onPageChange={handlePageClick}
         containerClassName={"pagination"}
         activeClassName={"active"}
-        forcePage={currentPage - 1} // This ensures the current page is reflected in the pagination UI.
+        forcePage={currentPage - 1}
       />
 
       {isDialogOpen && (
@@ -384,7 +391,7 @@ export default function ProductTable() {
           bodyBackgroundColor="white"
           bodyTextColor="black"
           zIndex="10"
-          headerText="Import Products"
+          headerText="Fayl yuklash"
           onClose={() => setIsDialogOpen(false)}
           closeBox={() => setIsDialogOpen(false)}
         >

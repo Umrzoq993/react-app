@@ -104,18 +104,18 @@ export default function EditRegionCityContent({
     onSave(tempCourier.id, tempCourier.covered_cities);
   };
 
-  if (!tempCourier) return <div>Loading...</div>;
+  if (!tempCourier) return <div>Yuklanmoqda...</div>;
 
   return (
     <div className="edit-region-city">
       <div className="field-group">
-        <label htmlFor="region-select">Region:</label>
+        <label htmlFor="region-select">Viloyat:</label>
         <select
           id="region-select"
           value={tempCourier.region.id || ""}
           onChange={handleRegionChange}
         >
-          <option value="">-- Select Region --</option>
+          <option value="">-- Viloyatni tanlang --</option>
           {regions.map((reg) => (
             <option key={reg.id} value={reg.id}>
               {reg.name}
@@ -125,7 +125,7 @@ export default function EditRegionCityContent({
       </div>
 
       <div className="field-group city-checkbox-group">
-        <label>Cities:</label>
+        <label>Tumanlar:</label>
 
         {/* Select All / Deselect All checkbox */}
         <div className="select-all">
@@ -136,7 +136,7 @@ export default function EditRegionCityContent({
               checked={allSelected}
               onChange={handleToggleAllCities}
             />
-            Select All
+            Barchasini tanlash
           </label>
         </div>
 
@@ -160,10 +160,10 @@ export default function EditRegionCityContent({
 
       <div className="dialog-actions">
         <button className="save-btn" onClick={handleSave}>
-          Save
+          Saqlash
         </button>
         <button className="cancel-btn" onClick={onClose}>
-          Cancel
+          Bekor qilish
         </button>
       </div>
     </div>

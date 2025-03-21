@@ -1,33 +1,44 @@
-// src/components/admin/UserList.jsx
 import React, { useState, useEffect } from "react";
 import axios from "../../axiosConfig"; // pre-configured axios instance
 import { useSelector } from "react-redux";
 import "../../style/users-table.scss";
 import UsersDialog from "./UsersDialog";
+import { AdminContext } from "../commonContext";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 
 function UserList() {
+  const { pageName, setPageName } = React.useContext(AdminContext);
+  setPageName("Foydalanuvchilar ro'yxati");
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
-  // Added password and confirmPassword to formData
+  // For editing an existing user
   const [formData, setFormData] = useState({
     username: "",
     full_name: "",
-    role: "",
+    role: "Admin", // default value
+    password: "",
+    confirmPassword: "",
+  });
+  // For creating a new user
+  const [createFormData, setCreateFormData] = useState({
+    username: "",
+    full_name: "",
+    role: "Admin", // default value
     password: "",
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Dialog states for update and delete
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [deleteUser, setDeleteUser] = useState(null);
-
   // For password policy error messages
   const [passwordError, setPasswordError] = useState("");
 
-  // Get token from Redux store (or use localStorage if not using Redux)
+  // Dialog states for update, create and delete
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(null);
+
+  // Get token from Redux store
   const token = useSelector((state) => state.auth.token);
 
   // Fetch users from API and filter out users with role "courier"
@@ -86,6 +97,28 @@ function UserList() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // --- CREATE LOGIC ---
+  const openCreateDialog = () => {
+    setCreateFormData({
+      username: "",
+      full_name: "",
+      role: "Admin", // default role
+      password: "",
+      confirmPassword: "",
+    });
+    setPasswordError("");
+    setIsCreateDialogOpen(true);
+  };
+
+  const closeCreateDialog = () => {
+    setIsCreateDialogOpen(false);
+    setPasswordError("");
+  };
+
+  const handleCreateChange = (e) => {
+    setCreateFormData({ ...createFormData, [e.target.name]: e.target.value });
+  };
+
   // Minimal password validation:
   // - At least 8 characters
   // - Contains at least one letter and one digit
@@ -97,15 +130,15 @@ function UserList() {
   };
 
   const handleEditConfirm = async () => {
-    // If password field is not empty, validate it.
+    // If password fields are not empty, validate them.
     if (formData.password || formData.confirmPassword) {
       if (formData.password !== formData.confirmPassword) {
-        setPasswordError("Parollar mos kelmadi.");
+        setPasswordError("Passwords do not match.");
         return;
       }
       if (!validatePassword(formData.password)) {
         setPasswordError(
-          "Parol kamida 8 ta belgi uzunligida bo'lishi hamda kamida bitta harf va raqamni o'z ichiga olishi shart."
+          "Parol kamida 8 ta belgidan iborat bo'lishi kerak va unda kamida bir harf va bir raqam bo'lishi kerak."
         );
         return;
       }
@@ -133,6 +166,39 @@ function UserList() {
     }
   };
 
+  // Use the /register/ endpoint to properly create a user with a password.
+  const handleCreateConfirm = async () => {
+    if (createFormData.password !== createFormData.confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
+    if (!validatePassword(createFormData.password)) {
+      setPasswordError(
+        "Parol kamida 8 ta belgidan iborat bo'lishi kerak va unda kamida bir harf va bir raqam bo'lishi kerak."
+      );
+      return;
+    }
+
+    const newUserData = {
+      username: createFormData.username,
+      full_name: createFormData.full_name,
+      role: createFormData.role,
+      password: createFormData.password,
+    };
+
+    try {
+      await axios.post("/accounts/register/", newUserData, {
+        // If you don't need authentication for registration, you can omit the header:
+        // headers: { Authorization: `Bearer ${token}` },
+      });
+      closeCreateDialog();
+      fetchUsers();
+    } catch (err) {
+      console.error("Error creating user:", err);
+      setError("Error creating user");
+    }
+  };
+
   // --- DELETE LOGIC ---
   const openDeleteDialog = (user) => {
     setDeleteUser(user);
@@ -157,19 +223,23 @@ function UserList() {
     }
   };
 
-  if (loading) return <div className="table-container">Loading...</div>;
-  if (error) return <div className="table-container">Error: {error}</div>;
+  if (loading) return <div className="table-container">Yuklanmoqda...</div>;
+  if (error) return <div className="table-container">Xatolik: {error}</div>;
 
   return (
     <div className="table-container">
-      <h1>User List</h1>
+      <div className="top-content">
+        <button className="add" onClick={openCreateDialog}>
+          <Plus /> Yangi foydalanuvchi
+        </button>
+      </div>
       <table>
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Full Name</th>
-            <th>Role</th>
-            <th>Actions</th>
+            <th>Foydalanuvchi nomi</th>
+            <th>Familiya, ismi, sharifi</th>
+            <th>Foydalanuvchi roli</th>
+            <th>Qo'shimchalar</th>
           </tr>
         </thead>
         <tbody>
@@ -178,9 +248,9 @@ function UserList() {
               <td>{user.username}</td>
               <td>{user.full_name}</td>
               <td>{user.role}</td>
-              <td>
-                <button onClick={() => openEditDialog(user)}>Edit</button>
-                <button onClick={() => openDeleteDialog(user)}>Delete</button>
+              <td className="actions">
+                <Pencil size={20} onClick={() => openEditDialog(user)} />
+                <Trash2 size={20} onClick={() => openDeleteDialog(user)} />
               </td>
             </tr>
           ))}
@@ -191,7 +261,7 @@ function UserList() {
       {isEditDialogOpen && (
         <UsersDialog
           isOpen={isEditDialogOpen}
-          title="Edit User"
+          title="Foydalanuvchi ma'lumotlarini o'zgartirish"
           onClose={closeEditDialog}
           onConfirm={handleEditConfirm}
         >
@@ -206,7 +276,7 @@ function UserList() {
               />
             </label>
             <label>
-              <span>Familiya, ism, sharifi:</span>
+              <span>Familiya, ismi, sharifi:</span>
               <input
                 type="text"
                 name="full_name"
@@ -216,12 +286,14 @@ function UserList() {
             </label>
             <label>
               <span>Foydalanuvchi roli:</span>
-              <input
-                type="text"
+              <select
                 name="role"
                 value={formData.role}
                 onChange={handleEditChange}
-              />
+              >
+                <option value="Admin">Admin</option>
+                <option value="Operator">Operator</option>
+              </select>
             </label>
             <label>
               <span>Yangi parol:</span>
@@ -230,7 +302,7 @@ function UserList() {
                 name="password"
                 value={formData.password}
                 onChange={handleEditChange}
-                placeholder="Parolni o'zgartirmasangiz bo'sh qoldiring"
+                placeholder="Parolni o'zgartirmoqchi bo'lsangiz to'ldiring"
               />
             </label>
             <label>
@@ -240,7 +312,72 @@ function UserList() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleEditChange}
-                placeholder="Parolni o'zgartirmasangiz bo'sh qoldiring"
+                placeholder="Parolni o'zgartirmoqchi bo'lsangiz to'ldiring"
+              />
+            </label>
+            {passwordError && (
+              <p style={{ color: "red", fontSize: "0.85rem" }}>
+                {passwordError}
+              </p>
+            )}
+          </div>
+        </UsersDialog>
+      )}
+
+      {/* Create Dialog */}
+      {isCreateDialogOpen && (
+        <UsersDialog
+          isOpen={isCreateDialogOpen}
+          title="Yangi foydalanuvchi yaratish"
+          onClose={closeCreateDialog}
+          onConfirm={handleCreateConfirm}
+        >
+          <div className="dialog-form">
+            <label>
+              <span>Foydalanuvchi nomi:</span>
+              <input
+                type="text"
+                name="username"
+                value={createFormData.username}
+                onChange={handleCreateChange}
+              />
+            </label>
+            <label>
+              <span>Familiya, ismi, sharifi:</span>
+              <input
+                type="text"
+                name="full_name"
+                value={createFormData.full_name}
+                onChange={handleCreateChange}
+              />
+            </label>
+            <label>
+              <span>Foydalanuvchi roli:</span>
+              <select
+                name="role"
+                value={createFormData.role}
+                onChange={handleCreateChange}
+              >
+                <option value="Admin">Admin</option>
+                <option value="Operator">Operator</option>
+              </select>
+            </label>
+            <label>
+              <span>Foydalanuvchi paroli:</span>
+              <input
+                type="password"
+                name="password"
+                value={createFormData.password}
+                onChange={handleCreateChange}
+              />
+            </label>
+            <label>
+              <span>Parolni tasdiqlash:</span>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={createFormData.confirmPassword}
+                onChange={handleCreateChange}
               />
             </label>
             {passwordError && (
@@ -256,13 +393,13 @@ function UserList() {
       {isDeleteDialogOpen && (
         <UsersDialog
           isOpen={isDeleteDialogOpen}
-          title="Delete User"
+          title="Foydalanuvchini o'chirish"
           onClose={closeDeleteDialog}
           onConfirm={handleDeleteConfirm}
         >
           <p>
-            Are you sure you want to delete user{" "}
-            <strong>{deleteUser.username}</strong>?
+            Siz <strong>{deleteUser.username}</strong> foydalanuvchini
+            o'chirishni istaysizmi?
           </p>
         </UsersDialog>
       )}

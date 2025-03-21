@@ -41,7 +41,7 @@ const CitiesTable = () => {
         setCities(response.data);
         setTotalCount(response.data.length);
       } else {
-        console.warn("Unexpected city data format:", response.data);
+        console.warn("Noto'g'ri tuman formati:", response.data);
         setCities([]);
       }
       setLoading(false);
@@ -64,8 +64,14 @@ const CitiesTable = () => {
     fetchCities(newPage);
   };
 
-  if (loading) return <div className="cities-table">Loading cities...</div>;
-  if (error) return <div className="cities-table">Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="cities-table">
+        Tumanlar to'g'risida ma'lumotlar yuklanmoqda...
+      </div>
+    );
+  if (error)
+    return <div className="cities-table">Xatolik yuz berdi: {error}</div>;
 
   // Calculate total pages
   const pageCount = Math.ceil(totalCount / pageSize);
@@ -75,9 +81,9 @@ const CitiesTable = () => {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
-            <th>City Name</th>
-            <th>Region</th>
+            <th>T/R</th>
+            <th>Tuman nomi</th>
+            <th>Viloyat</th>
           </tr>
         </thead>
         <tbody>
@@ -94,8 +100,8 @@ const CitiesTable = () => {
       {/* Pagination UI */}
       {pageCount > 1 && (
         <ReactPaginate
-          previousLabel={"← Previous"}
-          nextLabel={"Next →"}
+          previousLabel={"← Oldingisi"}
+          nextLabel={"Keyingisi →"}
           breakLabel={"..."}
           pageCount={pageCount}
           onPageChange={handlePageClick}

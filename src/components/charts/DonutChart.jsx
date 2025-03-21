@@ -38,7 +38,7 @@ export default function DonutChart() {
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Error fetching donut chart data");
+      setError("Chart ma'lumotlari yuklanmadi");
       setLoading(false);
     }
   };
@@ -47,7 +47,7 @@ export default function DonutChart() {
     fetchDonutChartData();
   }, []);
 
-  if (loading) return <div>Loading donut chart...</div>;
+  if (loading) return <div>Yuklanmoqda...</div>;
   if (error) return <div>{error}</div>;
 
   return (

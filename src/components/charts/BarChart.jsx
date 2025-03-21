@@ -35,13 +35,15 @@ export default function BarChart() {
         series: barData.series,
         options: {
           ...prev.options,
-          xaxis: { categories: barData.labels },
+          xaxis: {
+            categories: barData.labels.map((l) => l.toString().split(" ")[0]),
+          },
         },
       }));
       setLoading(false);
     } catch (err) {
       console.error(err);
-      setError("Error fetching bar chart data");
+      setError("Chart ma'lumotlari yuklanmadi");
       setLoading(false);
     }
   };
@@ -51,7 +53,7 @@ export default function BarChart() {
     // eslint-disable-next-line
   }, []);
 
-  if (loading) return <div>Loading bar chart...</div>;
+  if (loading) return <div>Yuklanmoqda...</div>;
   if (error) return <div>{error}</div>;
 
   return (
