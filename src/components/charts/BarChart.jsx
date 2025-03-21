@@ -8,7 +8,7 @@ export default function BarChart() {
     series: [],
     options: {
       chart: { type: "bar", toolbar: { show: false } },
-      title: { text: "Region bo'yicha buyurtmalar", align: "left" },
+      title: { text: "Viloyatlar bo'yicha buyurtmalar", align: "left" },
       xaxis: { categories: [] },
       plotOptions: { bar: { horizontal: false, columnWidth: "50%" } },
       dataLabels: { enabled: false },
