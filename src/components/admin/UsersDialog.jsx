@@ -9,23 +9,23 @@ const UsersDialog = ({ isOpen, title, onClose, onConfirm, children }) => {
     isOpen && (
       <ReactDialogBox
         headerText={title}
-        headerBackgroundColor="#007bff"
+        headerBackgroundColor="#F59023"
         headerTextColor="#fff"
         closeButtonColor="#fff"
         bodyBackgroundColor="#fff"
         bodyTextColor="#333"
-        headerHeight="60"
+        headerHeight="80"
         onClose={onClose}
         closeBox={onClose}
       >
-        <div>
-          {children}
+        <div className="dialog-container">
+          <div className="dialog-body">{children}</div>
           <div className="dialog-actions">
             <button className="confirm-btn" onClick={onConfirm}>
-              Confirm
+              Tasdiqlash
             </button>
-            <button className="cancel-btn" onClick={onClose}>
-              Cancel
+            <button className="cancelbtn" onClick={onClose}>
+              Bekor qilish
             </button>
           </div>
         </div>

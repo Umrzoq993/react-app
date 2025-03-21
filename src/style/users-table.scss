@@ -51,3 +51,26 @@
     }
   }
 }
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    span {
+      font-weight: 600;
+    }
+    input {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      &:focus {
+        outline: none;
+        border-color: #f59023;
+      }
+    }
+  }
+}
