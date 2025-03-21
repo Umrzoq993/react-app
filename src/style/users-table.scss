@@ -1,0 +1,53 @@
+/* src/style/users-table.scss */
+.table-container {
+  width: 100%;
+  margin: 1rem 0;
+  font-family: "Montserrat", sans-serif;
+
+  h1 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #333;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+  }
+
+  button {
+    margin-right: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:first-of-type {
+      background-color: #007bff;
+      color: white;
+    }
+
+    &:last-of-type {
+      background-color: #dc3545;
+      color: white;
+    }
+  }
+}
